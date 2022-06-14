@@ -21,6 +21,10 @@ class GenerativeArt:
 
         self.surface = cairo.SVGSurface(output_file_path, width * n[0], height * n[1])
         self.context = cairo.Context(self.surface)
+        self.context.set_source_rgb(1, 1, 1)
+        self.context.rectangle(0, 0, self.width * self.n[0], self.height * self.n[1])
+        self.context.fill()
+        self.context.set_source_rgb(0, 0, 0)
 
 
     def generate(self, rule=0, p=None):
