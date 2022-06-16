@@ -39,3 +39,8 @@ python generate.py -r 2 --width 128 --height 128 -d normal -x p=129,l=0.1,mode=r
 python generate.py -r 3 -n "(3,1)" --width 128 --height 128 -d uniform ../examples/example04.svg
 ```
 ![andreaskreuz example](examples/example04.svg)
+### gardinen
+```
+python generate.py -r 4 -n "(3,1)" --width 128 --height 128 -d normal ../examples/example05.svg
+```
+![gardinen example](examples/example05.svg)

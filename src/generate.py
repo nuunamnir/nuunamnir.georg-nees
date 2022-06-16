@@ -36,6 +36,8 @@ class GenerativeArt:
             self._rule02(**{k:v for k, v in kwargs.items() if v is not None})
         elif rule == 3:
             self._rule03(**{k:v for k, v in kwargs.items() if v is not None})
+        elif rule == 4:
+            self._rule04(**{k:v for k, v in kwargs.items() if v is not None})
         else:
             raise NotImplementedError
 
@@ -161,6 +163,29 @@ class GenerativeArt:
                             self.context.stroke()
     
 
+    def _rule04(self, p=64):
+        for i in range(self.n[0]):
+                offset_x = i * self.width
+                for j in range(self.n[1]):
+                    offset_y = j * self.height
+                    for _ in range(p):
+                        y = (self.height * (min(1 - self.padding, max(self.padding, self.r())) - 0.5))
+                        self.context.save()
+                        self.context.translate(0, offset_y + self.height * (0.5 - self.padding))
+                        self.context.move_to(offset_x + self.padding * self.width, offset_y + self.height / 2 - abs(y))
+                        self.context.line_to(offset_x + self.width - self.padding * self.width, offset_y + self.height / 2 - abs(y))
+                        self.context.stroke()
+                        self.context.restore()
+                    for _ in range(p):
+                        y = (self.height * (min(1 - self.padding, max(self.padding, self.r())) - 0.5))
+                        self.context.save()
+                        self.context.translate(0, offset_y - self.height * 0.5)
+                        self.context.move_to(offset_x + self.padding * self.width, offset_y + self.height / 2 + abs(y) + self.height * self.padding)
+                        self.context.line_to(offset_x + self.width - self.padding * self.width, offset_y + self.height / 2 + abs(y) + self.height * self.padding)
+                        self.context.stroke()
+                        self.context.restore()
+
+
     def __del__(self):
         self.surface.flush()
         self.surface.finish()
@@ -199,7 +224,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Generate images following the rules of Georg Nees, published in rot 19 computer-grafik (1962).')
     parser.add_argument('output', type=str, help='the destionation to which the image is written in SVG format')
-    parser.add_argument('-r', '--rule', type=int, default=0, help='the rule according to which the image is to be generated (0 = 8-ecke, 1 = 23-ecke)', choices=[0, 1, 2, 3])
+    parser.add_argument('-r', '--rule', type=int, default=0, help='the rule according to which the image is to be generated (0 = 8-ecke, 1 = 23-ecke)', choices=[0, 1, 2, 3, 4])
     parser.add_argument('--width', type=int, default=64, help='the width of the generated image (default: 64)')
     parser.add_argument('--height', type=int, default=64, help='the width of the generated image (default: 64)')
     parser.add_argument('-d', '--distribution', type=str, default='uniform', help='the distribution according to which the random numbers are sampled; please note that the random number is clamped to the interval [PADDING, 1 - PADDING] (default: uniform)', choices=['uniform', 'exponential', 'normal'])
