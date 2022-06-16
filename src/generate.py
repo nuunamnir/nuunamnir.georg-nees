@@ -38,6 +38,13 @@ class GenerativeArt:
                 self._rule01()
             else:
                 self._rule01(p=p)
+        elif rule == 2:
+            if p is None:
+                self._rule02()
+            else:
+                self._rule02(p=p)
+        else:
+            raise NotImplementedError
 
 
 
@@ -83,6 +90,33 @@ class GenerativeArt:
                     self.context.line_to(start_x + offset_x, last_y + offset_y)
                 self.context.line_to(start_x + offset_x, start_y + offset_y)
                 self.context.stroke()
+
+
+    def _rule02(self, p=2048, l=0.1):
+        for i in range(self.n[0]):
+            offset_x = i * self.width
+            for j in range(self.n[1]):
+                orientation = numpy.random.randint(2)
+                offset_y = j * self.height
+                start_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+                start_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+                current_x = last_x = start_x
+                current_y = last_y = start_y
+                self.context.move_to(start_x + offset_x, start_y + offset_y)
+                for k in range(p):
+                    if k % 2 == orientation:
+                        current_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+                        while abs(current_y - last_y) > l * self.height:
+                            current_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+                        self.context.line_to(last_x + offset_x, current_y + offset_y)
+                    else:
+                        current_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+                        while abs(current_x - last_x) > l * self.width:
+                            current_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+                        self.context.line_to(current_x + offset_x, last_y + offset_y)
+                    last_x = current_x
+                    last_y = current_y
+                self.context.stroke()
     
 
     def __del__(self):
@@ -101,7 +135,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Generate images following the rules of Georg Nees, published in rot 19 computer-grafik (1962).')
     parser.add_argument('output', type=str, help='the destionation to which the image is written in SVG format')
-    parser.add_argument('-r', '--rule', type=int, default=0, help='the rule according to which the image is to be generated (0 = 8-ecke, 1 = 23-ecke)', choices=[0, 1])
+    parser.add_argument('-r', '--rule', type=int, default=0, help='the rule according to which the image is to be generated (0 = 8-ecke, 1 = 23-ecke)', choices=[0, 1, 2])
     parser.add_argument('--width', type=int, default=64, help='the width of the generated image (default: 64)')
     parser.add_argument('--height', type=int, default=64, help='the width of the generated image (default: 64)')
     parser.add_argument('-d', '--distribution', type=str, default='uniform', help='the distribution according to which the random numbers are sampled; please note that the random number is clamped to the interval [PADDING, 1 - PADDING] (default: uniform)', choices=['uniform', 'exponential', 'normal'])
@@ -116,5 +150,7 @@ if __name__ == '__main__':
         a.generate(rule=args.rule)
     elif args.rule == 1:
         a.generate(rule=args.rule, p=23)
+    elif args.rule == 2:
+        a.generate(rule=args.rule)
     else:
         raise NotImplementedError
