@@ -34,3 +34,8 @@ python generate.py -r 2 --width 128 --height 128 -d uniform -s 2106 -p 0.1 -n "(
 python generate.py -r 2 --width 128 --height 128 -d normal -x p=129,l=0.1,mode=rectangle -s 2106 -p 0.1 -n "(3,1)" ../examples/example03.svg
 ```
 ![paralleler irrweg example](examples/example03.svg)
+### andreaskreuz
+```
+python generate.py -r 3 -n "(3,1)" --width 128 --height 128 -d uniform ../examples/example04.svg
+```
+![andreaskreuz example](examples/example04.svg)
