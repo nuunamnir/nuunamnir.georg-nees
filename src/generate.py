@@ -27,22 +27,13 @@ class GenerativeArt:
         self.context.set_source_rgb(0, 0, 0)
 
 
-    def generate(self, rule=0, p=None):
+    def generate(self, rule=0, **kwargs):
         if rule == 0:
-            if p is None:
-                self._rule00()
-            else:
-                self._rule00(p=p)
+            self._rule00(**{k:v for k, v in kwargs.items() if v is not None})
         elif rule == 1:
-            if p is None:
-                self._rule01()
-            else:
-                self._rule01(p=p)
+            self._rule01(**{k:v for k, v in kwargs.items() if v is not None})
         elif rule == 2:
-            if p is None:
-                self._rule02()
-            else:
-                self._rule02(p=p)
+            self._rule02(**{k:v for k, v in kwargs.items() if v is not None})
         else:
             raise NotImplementedError
 
@@ -92,31 +83,58 @@ class GenerativeArt:
                 self.context.stroke()
 
 
-    def _rule02(self, p=2048, l=0.1):
-        for i in range(self.n[0]):
-            offset_x = i * self.width
-            for j in range(self.n[1]):
-                orientation = numpy.random.randint(2)
-                offset_y = j * self.height
-                start_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
-                start_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
-                current_x = last_x = start_x
-                current_y = last_y = start_y
-                self.context.move_to(start_x + offset_x, start_y + offset_y)
-                for k in range(p):
-                    if k % 2 == orientation:
-                        current_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
-                        while abs(current_y - last_y) > l * self.height:
+    def _rule02(self, p=2048, l=0.1, mode='line'):
+        if mode == 'line':
+            for i in range(self.n[0]):
+                offset_x = i * self.width
+                for j in range(self.n[1]):
+                    orientation = numpy.random.randint(2)
+                    offset_y = j * self.height
+                    start_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+                    start_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+                    current_x = last_x = start_x
+                    current_y = last_y = start_y
+                    self.context.move_to(start_x + offset_x, start_y + offset_y)
+                    for k in range(p):
+                        if k % 2 == orientation:
                             current_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
-                        self.context.line_to(last_x + offset_x, current_y + offset_y)
-                    else:
-                        current_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
-                        while abs(current_x - last_x) > l * self.width:
+                            while abs(current_y - last_y) > l * self.height:
+                                current_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+                            self.context.line_to(last_x + offset_x, current_y + offset_y)
+                        else:
                             current_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
-                        self.context.line_to(current_x + offset_x, last_y + offset_y)
-                    last_x = current_x
-                    last_y = current_y
-                self.context.stroke()
+                            while abs(current_x - last_x) > l * self.width:
+                                current_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+                            self.context.line_to(current_x + offset_x, last_y + offset_y)
+                        last_x = current_x
+                        last_y = current_y
+                    self.context.stroke()
+        elif mode == 'rectangle':
+            for i in range(self.n[0]):
+                offset_x = i * self.width
+                for j in range(self.n[1]):
+                    offset_y = j * self.height
+                    for _ in range(p):
+                        start_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+                        start_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+
+                        end_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+                        while abs(end_x - start_x) > l * self.width:
+                            end_x = self.width * min(1 - self.padding, max(self.padding, self.r()))
+
+                        end_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+                        while abs(end_y - start_y) > l * self.height:
+                            end_y = self.height * min(1 - self.padding, max(self.padding, self.r()))
+        
+                        if start_x > end_x:
+                            start_x, end_x = end_x, start_x
+                        if start_y > end_y:
+                            start_y, end_y = end_y, start_y
+                        self.context.rectangle(start_x + offset_x, start_y + offset_y, end_x - start_x, end_y - start_y)
+                        self.context.stroke()
+
+        else:
+            raise NotImplementedError
     
 
     def __del__(self):
@@ -132,6 +150,26 @@ if __name__ == '__main__':
             return tuple(map(int, s.lstrip('(').rstrip(')').split(',')))
         except:
             raise argparse.ArgumentTypeError('dimensions must be given separated by commas and enclosed in brackets, e.g.: "(16,16)"')
+    
+    
+    def rule_parameters(s):
+        try:
+            parameters = s.split(',')
+            r = dict()
+            for parameter in parameters:
+                name, value = parameter.split('=')
+                try:
+                    value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        value = str(value)
+                r[name] = value
+            return r
+        except:
+            raise argparse.ArgumentTypeError('rule parameters must be given separated by commas, e.g.: l=0.1,mode=rectangle')
+
 
     parser = argparse.ArgumentParser(description='Generate images following the rules of Georg Nees, published in rot 19 computer-grafik (1962).')
     parser.add_argument('output', type=str, help='the destionation to which the image is written in SVG format')
@@ -142,15 +180,15 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--seed', type=int, default=2106, help='the seed for the random number generator (default: 2106)')
     parser.add_argument('-p', '--padding', type=float, default=0.1, help='the distance between the image border and the drawable area of the image as proportion of the image width and height (default:0.1)')
     parser.add_argument('-n', type=dimensions, default=(16, 16), help='the dimensions of the output, i.e., the image contains x by y subimages (default="(16,16)")')
+    parser.add_argument('-x', '--parameters', type=rule_parameters, default='', help='additional parameters that are rule specific, in the shape parameter1=x,parameter2=y,parameterN=z (default="")')
     args = parser.parse_args()
-    print(args)
 
     a = GenerativeArt(output_file_path=args.output, n=args.n, width=args.width, height=args.height, padding=args.padding, seed=args.seed, distribution=args.distribution)
     if args.rule == 0:
-        a.generate(rule=args.rule)
+        a.generate(rule=args.rule, **{k:v for k, v in args.parameters.items()})
     elif args.rule == 1:
-        a.generate(rule=args.rule, p=23)
+        a.generate(rule=args.rule, **{k:v for k, v in args.parameters.items()})
     elif args.rule == 2:
-        a.generate(rule=args.rule)
+        a.generate(rule=args.rule, **{k:v for k, v in args.parameters.items()})
     else:
         raise NotImplementedError
