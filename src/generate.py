@@ -43,7 +43,8 @@ class GenerativeArt:
 
 
 
-    def _rule00(self, p=8):             
+    def _rule00(self, p=8): 
+        # 8-ecke            
         for i in range(self.n[0]):
             offset_x = i * self.width
             for j in range(self.n[1]):
@@ -58,6 +59,7 @@ class GenerativeArt:
 
 
     def _rule01(self, p=23): 
+        # 23-ecke
         if p < 3:
             raise ValueError('p must be at least 3')            
         for i in range(self.n[0]):
@@ -88,6 +90,7 @@ class GenerativeArt:
 
 
     def _rule02(self, p=2048, l=0.1, mode='line'):
+        # achsenparalleler irrweg
         if mode == 'line':
             for i in range(self.n[0]):
                 offset_x = i * self.width
@@ -142,6 +145,7 @@ class GenerativeArt:
 
 
     def _rule03(self, p=48, a=60, r=60, w=0.3, l=0.3):
+        # andreaskreuz
         max_radius = (min(self.width, self.height)) / 2
         for i in range(self.n[0]):
                 offset_x = i * self.width
@@ -164,6 +168,7 @@ class GenerativeArt:
     
 
     def _rule04(self, p=64):
+        # gardine
         for i in range(self.n[0]):
                 offset_x = i * self.width
                 for j in range(self.n[1]):
@@ -223,8 +228,8 @@ if __name__ == '__main__':
 
 
     parser = argparse.ArgumentParser(description='Generate images following the rules of Georg Nees, published in rot 19 computer-grafik (1962).')
-    parser.add_argument('output', type=str, help='the destionation to which the image is written in SVG format')
-    parser.add_argument('-r', '--rule', type=int, default=0, help='the rule according to which the image is to be generated (0 = 8-ecke, 1 = 23-ecke)', choices=[0, 1, 2, 3, 4])
+    parser.add_argument('output', type=str, help='the destination to which the image is written in SVG format')
+    parser.add_argument('-r', '--rule', type=int, default=0, help='the rule according to which the image is to be generated (0 = 8-ecke, 1 = 23-ecke, 2 = achesenparalleler irrweg, 3 = andreaskreuz, 4 = gardine)', choices=[0, 1, 2, 3, 4])
     parser.add_argument('--width', type=int, default=64, help='the width of the generated image (default: 64)')
     parser.add_argument('--height', type=int, default=64, help='the width of the generated image (default: 64)')
     parser.add_argument('-d', '--distribution', type=str, default='uniform', help='the distribution according to which the random numbers are sampled; please note that the random number is clamped to the interval [PADDING, 1 - PADDING] (default: uniform)', choices=['uniform', 'exponential', 'normal'])
